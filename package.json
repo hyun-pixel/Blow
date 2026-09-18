@@ -1,0 +1,14 @@
+{
+  "name": "blow-website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "marked": "18.0.13"
+  }
+}
