@@ -20,6 +20,19 @@ Node.js와 pnpm이 설치된 환경에서 다음 순서로 실행합니다.
 
 본문·정책을 수정하면 pnpm build 후 브라우저를 새로고침합니다. 서버는 dist 폴더만 127.0.0.1에 제공합니다. 로컬 확인용 서버이므로 그대로 인터넷에 공개하지 않습니다.
 
+## Vercel 배포 설정
+
+저장소 루트의 vercel.json이 빌드 명령을 pnpm run build, 배포 결과 폴더를 dist로 지정합니다. Vercel이 기본 폴더 public을 찾다가 실패하지 않도록 실제 빌드 결과 위치를 명시했습니다.
+
+- Git 저장소: hyun-pixel/Blow, 배포 브랜치: main.
+- Root Directory: 저장소 루트. Framework Preset: Other.
+- Build Command: pnpm run build. Output Directory: dist.
+- 환경변수: 현재 정적 홈페이지에는 필요 없음.
+
+설정 파일이 포함된 최신 커밋을 배포해야 합니다. 예전 실패 커밋을 다시 배포하면 새 설정이 적용되지 않습니다. Git 연동 자동 배포가 시작되지 않으면 Vercel의 Deployments에서 최신 main 커밋으로 배포합니다.
+
+배포 확인과 정식 공개 준비는 별개입니다. 현재 정책 초안 표시와 검색 수집 제외 설정을 유지합니다. API 키·결제·회원 기능은 홈페이지에 포함하지 않습니다.
+
 ## 수정 위치
 
 | 파일 | 내용 |
