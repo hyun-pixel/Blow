@@ -15,17 +15,17 @@ for (const page of pages) {
   await writeFile(new URL('index.html', dir), layout({ ...page, content }));
 }
 const policies = [
-  ['terms', '이용약관', 'BLOW_이용약관_초안_v0.1.md'],
-  ['privacy', '개인정보처리방침', 'BLOW_개인정보처리방침_초안_v0.1.md'],
-  ['refund', '결제 및 환불 안내', 'BLOW_결제및환불안내_초안_v0.1.md'],
+  ['terms', '이용약관', 'BLOW_이용약관_v1.0.md'],
+  ['privacy', '개인정보처리방침', 'BLOW_개인정보처리방침_v1.0.md'],
+  ['refund', '비공개 베타 운영 안내', 'BLOW_베타운영안내_v1.0.md'],
 ];
 for (const [slug, title, file] of policies) {
   // These documents are trusted project sources, never visitor-provided Markdown.
   const markdown = await readFile(new URL('outputs/' + file, root), 'utf8');
-  const content = '<section class="policy-shell"><div class="policy-status"><span>정책 문서 · 검토용 초안</span><span>정식 공개 전 내용을 확정합니다.</span></div><article class="policy-prose">' + marked.parse(markdown) + '</article></section>';
+  const content = '<section class="policy-shell"><div class="policy-status"><span>정책 문서 · 시행 중</span><span>시행일 2026년 9월 23일</span></div><article class="policy-prose">' + marked.parse(markdown) + '</article></section>';
   const dir = new URL('dist/' + slug + '/', root);
   await mkdir(dir, { recursive: true });
-  await writeFile(new URL('index.html', dir), layout({ title: title + ' — BLOW', description: 'BLOW ' + title + ' 검토용 초안입니다.', route: '/' + slug + '/', draft: true, content }));
+  await writeFile(new URL('index.html', dir), layout({ title: title + ' — BLOW', description: 'BLOW ' + title + '입니다.', route: '/' + slug + '/', policy: true, content }));
 }
-await writeFile(new URL('dist/robots.txt', root), 'User-agent: *\nDisallow: /\n');
-console.log('Built 6 BLOW pages (local preview; indexing disabled).');
+await writeFile(new URL('dist/robots.txt', root), 'User-agent: *\nAllow: /\n');
+console.log('Built 6 public BLOW pages.');
