@@ -46,12 +46,12 @@ const entranceAnimations = new Set();
 const entranceTargets = [...document.querySelectorAll([
   '.hero-eyebrow', '.hero h1>span', '.hero-description', '.hero-actions',
   '.section-heading', '.feature', '.flow-list>li', '.flow-bottom',
-  '.pricing-intro', '.price-plan', '.contact-inner>div',
+  '.pricing-intro', '.price-plan',
   '.page-heading', '.guide-section-heading', '.guide-steps>li', '.account-help>article',
   '.download-card', '.download-requirements', '.download-next'
 ].join(','))];
 const entranceDelays = new Map();
-for (const group of document.querySelectorAll('.hero-copy,.feature-grid,.flow-list,.contact-inner')) {
+for (const group of document.querySelectorAll('.hero-copy,.feature-grid,.flow-list')) {
   entranceTargets.filter(el => group.contains(el)).forEach((el, index) => entranceDelays.set(el, Math.min(index * 90, 360)));
 }
 const entranceObserver = new IntersectionObserver(entries => {
@@ -101,7 +101,7 @@ function paintPointer() {
   pointerFrame = 0;
   cursor.style.transform = `translate3d(${pointerX}px, ${pointerY}px, 0)`;
   cursor.classList.add('is-visible');
-  cursor.classList.toggle('is-link', !!pointerTarget.closest('a,button'));
+  cursor.classList.toggle('is-link', !!pointerTarget.closest('a,button,summary'));
   const card = pointerTarget.closest('.feature,.price-plan,.download-card');
   const button = pointerTarget.closest('.button');
   if (card !== activeCard) clearSurface(activeCard);
@@ -162,4 +162,46 @@ reducedMotion.addEventListener('change', () => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { resetPointer(); finishEntrances(); }
+});
+
+
+// Share one inquiry picker across page actions and the native disclosure.
+const contactWidget = document.querySelector('.floating-contact');
+const contactLauncher = contactWidget?.querySelector('summary');
+let contactReturnFocus = contactLauncher;
+function closeContact(returnFocus = false) {
+  if (!contactWidget?.open) return;
+  contactWidget.open = false;
+  if (returnFocus) contactReturnFocus?.focus({ preventScroll: true });
+}
+document.addEventListener('click', event => {
+  const trigger = event.target.closest('[data-contact-open]');
+  if (trigger && contactWidget) {
+    event.preventDefault();
+    closeMenu();
+    contactReturnFocus = trigger.getClientRects().length ? trigger : menuButton;
+    contactWidget.open = true;
+    contactWidget.querySelector('.contact-channel').focus({ preventScroll: true });
+    return;
+  }
+  if (!contactWidget?.contains(event.target)) closeContact();
+});
+contactLauncher?.addEventListener('click', () => { contactReturnFocus = contactLauncher; });
+// Keep previously shared /#contact links useful after removing the large section.
+function openContactFromHash() {
+  if (location.hash === '#contact' && contactWidget) contactWidget.open = true;
+}
+window.addEventListener('hashchange', openContactFromHash);
+openContactFromHash();
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && contactWidget?.open) {
+    event.preventDefault();
+    closeContact(true);
+  }
+});
+contactWidget?.addEventListener('click', event => {
+  if (event.target.closest('a')) closeContact(true);
+});
+contactWidget?.addEventListener('focusout', event => {
+  if (event.relatedTarget && !contactWidget.contains(event.relatedTarget)) closeContact();
 });

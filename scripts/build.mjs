@@ -24,7 +24,7 @@ const policies = [
 for (const [slug, title, file] of policies) {
   // Only trusted project Markdown is rendered; no visitor input is accepted.
   const markdown = await readFile(new URL('outputs/' + file, root), 'utf8');
-  const content = '<div class="policy-shell shell"><a class="back-link" href="/">BLOW 홈 <span aria-hidden="true">↖</span></a><div class="policy-status"><strong>검토용 초안</strong><p>현재 시행 중인 정책이 아닙니다. 실제 운영 정보와 조건을 확정한 뒤 공개합니다.</p></div><article class="policy-prose">' + marked.parse(markdown) + '</article><a class="text-link" href="/#contact">정책 관련 이용 문의 <span aria-hidden="true">↗</span></a></div>';
+  const content = '<div class="policy-shell shell"><a class="back-link" href="/">BLOW 홈 <span aria-hidden="true">↖</span></a><div class="policy-status"><strong>검토용 초안</strong><p>현재 시행 중인 정책이 아닙니다. 실제 운영 정보와 조건을 확정한 뒤 공개합니다.</p></div><article class="policy-prose">' + marked.parse(markdown) + '</article><a class="text-link" href="#contact" data-contact-open aria-controls="contact-picker">정책 관련 이용 문의 <span aria-hidden="true">↗</span></a></div>';
   const dir = new URL('dist/' + slug + '/', root);
   await mkdir(dir, { recursive: true });
   await writeFile(new URL('index.html', dir), layout({ title: title + ' | BLOW', description: 'BLOW ' + title + ' 검토용 초안입니다.', route: '/' + slug + '/', policy: true, content }));

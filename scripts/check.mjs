@@ -18,6 +18,11 @@ for (const route of routes) {
   for (const number of html.match(/\b\d{3}-\d{2}-\d{5}\b/g) || []) {
     assert.equal(number,'000-00-00000',route + ': no plausible fabricated registration number');
   }
+  assert.equal((html.match(/class="floating-contact"/g) || []).length, 1, route + ': shared inquiry picker');
+  assert(html.includes('aria-controls="contact-picker"'), route + ': inquiry disclosure controls');
+  const kakaoLinks = [...html.matchAll(/<a[^>]+href="https:\/\/open\.kakao\.com\/o\/smOiIaOi"[^>]*>/g)];
+  assert.equal(kakaoLinks.length, 1, route + ': correct Kakao destinations');
+  for (const [link] of kakaoLinks) assert(link.includes('target="_blank"') && link.includes('rel="noopener noreferrer"'), route + ': safe external chat link');
   pages.set(route, html);
 }
 for (const [route, html] of pages) {
@@ -38,7 +43,8 @@ for (const text of ['글 작성부터','이미지 생성까지','BLOW가 도와�
 const pricing = pages.get('/pricing/');
 for (const text of ['42,900','39,000','3,900','30일','OpenAI API 이용료는 별도']) assert(pricing.includes(text), 'pricing: missing ' + text);
 assert(!/id="(?:pricing|start)"/.test(home), 'home: price and onboarding sections belong in dedicated pages');
-assert(pricing.includes('href="/#contact"'), 'pricing: inquiry returns to the home contact section');
+assert(!home.includes('class="contact-section"'), 'home: large contact section removed');
+assert(pricing.includes('href="#contact" data-contact-open'), 'pricing: opens shared inquiry picker');
 for (const [route, html] of pages) assert(html.includes('href="/pricing/"'), route + ': dedicated pricing navigation');
 assert(!/<h[1-6][^>]*>[^<]*(FAQ|경쟁사)/i.test(home));
 const download = pages.get('/download/');
