@@ -8,7 +8,7 @@ const pages = [
   { route: '/', file: 'home.html', title: 'BLOW | 브랜드 블로그 자동 작성 프로그램', description: '글 작성부터 이미지 생성까지 BLOW가 도와드립니다. 브랜드에 맞춘 글과 이미지를 네이버에 임시저장하고, 검토 후 직접 발행하세요.' },
   { route: '/pricing/', file: 'pricing.html', title: '요금 안내 | BLOW', description: 'BLOW 30일 이용권의 가격과 이용 범위, 별도 API 비용 및 이용 문의를 확인하세요.' },
   { route: '/guide/', file: 'guide.html', title: '사용 가이드 | BLOW', description: '이용 문의, 설치·회원가입, 결제·승인부터 블로그 세팅과 첫 글의 임시저장까지. BLOW 사용 순서를 안내합니다.' },
-  { route: '/download/', file: 'download.html', title: '다운로드 | BLOW', description: 'Windows 64비트용 BLOW 0.1.11 테스트 설치파일을 내려받고 사용 환경과 배포 안내를 확인하세요.' },
+  { route: '/download/', file: 'download.html', title: '다운로드 | BLOW', description: 'Windows 64비트용 BLOW 0.1.11 설치파일을 내려받고 사용 환경과 배포 안내를 확인하세요.' },
 ];
 for (const page of pages) {
   const content = (await readFile(new URL('src/' + page.file, root), 'utf8')).replace('{{HERO}}', hero);

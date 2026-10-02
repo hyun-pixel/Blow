@@ -46,3 +46,9 @@
 - 최종 프롬프트:
 
 > Use case: photorealistic-natural. Create one horizontal editorial photograph for a small illustrative brand-blog editor on a Korean website called BLOW. This is a generic brand story illustration, not a particular industry or real customer. Scene: sunlit white creative studio worktable with an open blank cream notebook, a forest-green closed notebook and a small glass vase holding two fresh green stems. Natural linen and matte paper textures, honest soft daylight and restrained soft shadows; tasteful photographic composition and realistic subtle imperfections. Clean fresh white and leaf-green palette. Wide landscape 3:2 composition, objects within center so a 2:1 crop still works. No people, screens, logos, text, lettering, watermark, plastic 3D rendering, or dark mood. Image only, no UI, no typography, no collages.
+
+### 리뉴얼 탭 아이콘 (2026-10-02)
+
+- 파일: dist/assets/favicon.svg.
+- Cafe24 써라운드 v2.0 원본 글꼴의 b. 글자 모양을 SVG path로 변환했습니다. 외부 폰트 로딩 없이 동일한 모양을 표시합니다.
+- 사이트 다운로드 카드에서 사용하는 초록 배경과 흰색 b. 표시를 적용했습니다. 작은 탭에서 읽히는 축약형이며, 사이트 상단의 blow. 워드마크는 유지합니다.

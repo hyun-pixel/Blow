@@ -13,7 +13,8 @@ for (const route of routes) {
   assert(!html.includes('undefined') && !html.includes('{{HERO}}'), route + ': no unresolved values');
   if (route === '/terms/') assert(html.includes('예시 사업자 정보 · 실제 사업자 정보가 아닙니다.'), route + ': sample disclosure');
   else assert(!html.includes('000-00-00000'), route + ': example details belong only in draft terms');
-  assert(html.includes('정식 판매는 준비 중이며, 설치파일은 테스트용으로 제공합니다.'), route + ': draft sales status');
+  assert(html.includes('BLOW는 이용 문의 후 결제와 운영자 승인을 거쳐 사용할 수 있습니다.'), route + ': inquiry, payment and approval flow');
+  assert(!/테스트|판매는 준비 중|판매 준비 중|현재 결제는 받지|실제 결제는 받지/.test(html), route + ': no outdated trial or unavailable-sales copy');
   for (const number of html.match(/\b\d{3}-\d{2}-\d{5}\b/g) || []) {
     assert.equal(number,'000-00-00000',route + ': no plausible fabricated registration number');
   }
@@ -42,8 +43,8 @@ for (const [route, html] of pages) assert(html.includes('href="/pricing/"'), rou
 assert(!/<h[1-6][^>]*>[^<]*(FAQ|경쟁사)/i.test(home));
 const download = pages.get('/download/');
 const installerUrl = 'https://github.com/hyun-pixel/Blow/releases/download/desktop-v0.1.11-test.1/BLOW-Setup-0.1.11-x64.exe';
-for (const text of ['테스트용 다운로드','BLOW-Setup-0.1.11-x64.exe','117.3MB','게시자 전자 서명 없음']) assert(download.includes(text),'download: missing '+text);
-assert(download.includes('href="' + installerUrl + '" aria-describedby="download-notice"'),'download: approved public installer with test notice');
+for (const text of ['설치파일 다운로드','BLOW-Setup-0.1.11-x64.exe','117.3MB','게시자 전자 서명 없음']) assert(download.includes(text),'download: missing '+text);
+assert(download.includes('href="' + installerUrl + '" aria-describedby="download-notice"'),'download: approved public installer with signing notice');
 assert(!download.includes('공개 다운로드 준비 중'),'download: no stale availability notice');
 for (const [route, html] of pages) {
   const fileLinks = [...html.matchAll(/href="([^"]+\.(?:exe|msi|zip))"/gi)].map(match=>match[1]);
@@ -65,4 +66,4 @@ assert(hero.includes('aria-describedby="demo-summary"'), 'hero: animation has an
 for (const file of ['cursor-arrow.svg','cursor-link.svg']) {
   assert((await stat(join('dist/assets', file))).isFile(), 'cursor: missing ' + file);
 }
-console.log('PASS: 7 renewal routes, links/assets, pricing, guide, draft policies, example disclosure and public test download.');
+console.log('PASS: 7 renewal routes, links/assets, pricing, guide, draft policies, example disclosure and public download.');
