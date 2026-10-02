@@ -13,58 +13,153 @@ menuButton?.addEventListener('click', () => {
 });
 nav?.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && nav?.classList.contains('is-open')) { closeMenu(); menuButton.focus(); }
+  if (event.key === 'Escape' && nav?.classList.contains('is-open')) {
+    closeMenu();
+    menuButton.focus();
+  }
 });
-document.addEventListener('click', event => {
-  if (!event.target.closest('.site-header')) closeMenu();
-});
+document.addEventListener('click', event => { if (!event.target.closest('.site-header')) closeMenu(); });
 matchMedia('(min-width: 768px)').addEventListener('change', event => { if (event.matches) closeMenu(); });
 
-const examples = {
-  beauty: ['사진으로 전하는 브랜드의 분위기.', '공간의 모습부터 서비스 이야기까지, 우리다운 글을 준비하세요.'],
-  expert: ['복잡한 내용도, 차분하고 명확하게.', '주제와 참고자료를 정리해 전하세요. 전문 내용과 광고 표현은 발행 전 직접 검토해주세요.']
-};
-document.querySelectorAll('[data-example]').forEach(button => button.addEventListener('click', () => {
-  const example = button.dataset.example;
-  document.querySelectorAll('[data-example]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-  document.querySelectorAll('[data-example-panel]').forEach(panel => { panel.hidden = panel.dataset.examplePanel !== example; });
-  document.querySelector('#example-title').textContent = examples[example][0];
-  document.querySelector('#example-description').textContent = examples[example][1];
-}));
-
-const steps = [
-  { label: '브랜드 설정', title: '우리다운 문장의 시작.', lines: ['브랜드명, 업종과 서비스 소개.', '원하는 말투와 필수 문구를 설정하세요.'] },
-  { label: '주제와 자료', title: '오늘은 어떤 이야기를 할까요?', lines: ['글의 주제와 키워드를 정하고,', '참고할 텍스트, 파일과 URL을 준비하세요.'] },
-  { label: '글과 사진', title: '읽고 싶은 흐름으로.', lines: ['제목과 본문에 사진을 배치하고', '강조, 인용구와 구분선으로 정리합니다.'] },
-  { label: '네이버 임시저장', title: '이제, 마지막 확인만.', lines: ['네이버에 준비된 임시글을 검토하고', '사실과 표현을 확인한 뒤 직접 발행하세요.'] }
-];
-const workflow = document.querySelector('.workflow-preview');
-document.querySelectorAll('[data-flow]').forEach(button => button.addEventListener('click', () => {
-  const step = steps[Number(button.dataset.flow)];
-  document.querySelectorAll('[data-flow]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-  workflow.querySelector('.workflow-label').textContent = step.label;
-  workflow.querySelector('h3').textContent = step.title;
-  const description = workflow.querySelector('.workflow-description');
-  description.replaceChildren(document.createTextNode(step.lines[0]), document.createElement('br'), document.createTextNode(step.lines[1]));
-  workflow.classList.remove('is-changing');
-  requestAnimationFrame(() => requestAnimationFrame(() => workflow.classList.add('is-changing')));
-}));
-
-const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const reveals = [...document.querySelectorAll('.reveal')];
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('is-visible');
-      entry.target.classList.remove('reveal-pending');
-      observer.unobserve(entry.target);
-    }
+const guideLinks = [...document.querySelectorAll('.guide-nav a')];
+if (guideLinks.length) {
+  const visibleSections = new Set();
+  const guideObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => entry.isIntersecting ? visibleSections.add(entry.target) : visibleSections.delete(entry.target));
+    const visible = [...visibleSections].sort((a,b) => Math.abs(a.getBoundingClientRect().top) - Math.abs(b.getBoundingClientRect().top))[0];
+    if (!visible) return;
+    guideLinks.forEach(link => {
+      if (link.hash === '#' + visible.id) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  }, { rootMargin: '-5% 0px -65% 0px', threshold: 0 });
+  guideLinks.forEach(link => {
+    const section = document.querySelector(link.hash);
+    if (section) guideObserver.observe(section);
   });
-}, { threshold: 0.06 });
-if (!reduceMotion.matches) reveals.forEach(element => {
-  if (element.getBoundingClientRect().top > innerHeight) element.classList.add('reveal-pending');
-  observer.observe(element);
+}
+
+// Native motion keeps the document readable before JavaScript and without animation support.
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+const entranceAnimations = new Set();
+const entranceTargets = [...document.querySelectorAll([
+  '.hero-eyebrow', '.hero h1>span', '.hero-description', '.hero-actions',
+  '.section-heading', '.feature', '.flow-list>li', '.flow-bottom',
+  '.pricing-intro', '.price-plan', '.contact-inner>div',
+  '.page-heading', '.guide-section-heading', '.guide-steps>li', '.account-help>article',
+  '.download-card', '.download-requirements', '.download-next'
+].join(','))];
+const entranceDelays = new Map();
+for (const group of document.querySelectorAll('.hero-copy,.feature-grid,.flow-list,.contact-inner')) {
+  entranceTargets.filter(el => group.contains(el)).forEach((el, index) => entranceDelays.set(el, Math.min(index * 90, 360)));
+}
+const entranceObserver = new IntersectionObserver(entries => {
+  for (const { target, isIntersecting } of entries) {
+    if (!isIntersecting) continue;
+    entranceObserver.unobserve(target);
+    target.classList.add('motion-seen');
+    if (reducedMotion.matches || target.contains(document.activeElement)) continue;
+    const compact = matchMedia('(max-width: 767px)').matches;
+    const animation = target.animate([
+      { opacity: 0, translate: compact ? '0 18px' : '0 32px' },
+      { opacity: 1, translate: '0 0' }
+    ], { duration: compact ? 520 : 760, delay: compact ? 0 : entranceDelays.get(target) || 0, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' });
+    entranceAnimations.add(animation);
+    animation.onfinish = animation.oncancel = () => entranceAnimations.delete(animation);
+  }
+}, { threshold: .08, rootMargin: '0px 0px -24px 0px' });
+for (const target of entranceTargets) {
+  if (reducedMotion.matches || target.getBoundingClientRect().bottom < 0) target.classList.add('motion-seen');
+  else entranceObserver.observe(target);
+}
+
+const cursor = document.createElement('div');
+cursor.className = 'cursor-ring';
+cursor.setAttribute('aria-hidden', 'true');
+document.body.append(cursor);
+let pointerFrame = 0;
+let pointerX = 0;
+let pointerY = 0;
+let pointerTarget = null;
+let activeCard = null;
+let activeButton = null;
+function clearSurface(element) {
+  if (!element) return;
+  element.classList.remove('pointer-active');
+  for (const property of ['--pointer-x', '--pointer-y', '--tilt-x', '--tilt-y', '--magnet-x', '--magnet-y']) element.style.removeProperty(property);
+}
+function resetPointer() {
+  cancelAnimationFrame(pointerFrame);
+  pointerFrame = 0;
+  cursor.classList.remove('is-visible', 'is-link', 'is-pressed');
+  clearSurface(activeCard);
+  clearSurface(activeButton);
+  activeCard = activeButton = pointerTarget = null;
+}
+function paintPointer() {
+  pointerFrame = 0;
+  cursor.style.transform = `translate3d(${pointerX}px, ${pointerY}px, 0)`;
+  cursor.classList.add('is-visible');
+  cursor.classList.toggle('is-link', !!pointerTarget.closest('a,button'));
+  const card = pointerTarget.closest('.feature,.price-plan,.download-card');
+  const button = pointerTarget.closest('.button');
+  if (card !== activeCard) clearSurface(activeCard);
+  if (button !== activeButton) clearSurface(activeButton);
+  activeCard = card;
+  activeButton = button;
+  for (const element of [card, button]) {
+    if (!element) continue;
+    const rect = element.getBoundingClientRect();
+    const x = (pointerX - rect.left) / rect.width - .5;
+    const y = (pointerY - rect.top) / rect.height - .5;
+    element.classList.add('pointer-active');
+    element.style.setProperty('--pointer-x', `${pointerX - rect.left}px`);
+    element.style.setProperty('--pointer-y', `${pointerY - rect.top}px`);
+    if (element === card) {
+      element.style.setProperty('--tilt-x', `${-y * 4}deg`);
+      element.style.setProperty('--tilt-y', `${x * 5}deg`);
+    } else {
+      element.style.setProperty('--magnet-x', `${x * 7}px`);
+      element.style.setProperty('--magnet-y', `${y * 5}px`);
+    }
+  }
+}
+document.addEventListener('pointermove', event => {
+  if (event.pointerType === 'touch') { resetPointer(); return; }
+  if (!finePointer.matches || reducedMotion.matches) return;
+  pointerX = event.clientX;
+  pointerY = event.clientY;
+  pointerTarget = event.target;
+  if (!pointerFrame) pointerFrame = requestAnimationFrame(paintPointer);
+}, { passive: true });
+document.addEventListener('pointerdown', event => {
+  if (event.pointerType === 'touch') { resetPointer(); return; }
+  if (finePointer.matches && !reducedMotion.matches) cursor.classList.add('is-pressed');
+}, { passive: true });
+document.addEventListener('pointerup', () => cursor.classList.remove('is-pressed'), { passive: true });
+document.documentElement.addEventListener('pointerleave', resetPointer);
+window.addEventListener('blur', resetPointer);
+window.addEventListener('pagehide', resetPointer);
+finePointer.addEventListener('change', resetPointer);
+// Keyboard focus never waits for an entrance animation or a decorative pointer.
+document.addEventListener('keydown', event => { if (event.key === 'Tab') resetPointer(); });
+document.addEventListener('focusin', event => {
+  for (const animation of entranceAnimations) {
+    if (animation.effect.target.contains(event.target)) animation.cancel();
+  }
 });
-reduceMotion.addEventListener('change', event => {
-  if (event.matches) { reveals.forEach(element => element.classList.remove('reveal-pending')); observer.disconnect(); }
+function finishEntrances() {
+  for (const animation of entranceAnimations) animation.cancel();
+}
+reducedMotion.addEventListener('change', () => {
+  resetPointer();
+  if (reducedMotion.matches) {
+    entranceObserver.disconnect();
+    finishEntrances();
+    entranceTargets.forEach(target => target.classList.add('motion-seen'));
+  }
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { resetPointer(); finishEntrances(); }
 });
